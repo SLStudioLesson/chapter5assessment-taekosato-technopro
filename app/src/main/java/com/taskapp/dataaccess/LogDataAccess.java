@@ -29,7 +29,7 @@ public class LogDataAccess {
      */
     public void save(Log log) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath, true))) {
-            String line = "\n" + log.getTaskCode() + "," + log.getChangeUserCode() + "," + 0 + "," + log.getChangeDate();
+            String line = "\n" + log.getTaskCode() + "," + log.getChangeUserCode() + "," + log.getStatus() + "," + log.getChangeDate();
             writer.write(line);
         } catch (IOException e) {
             e.printStackTrace();

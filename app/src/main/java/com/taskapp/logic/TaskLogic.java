@@ -75,17 +75,17 @@ public class TaskLogic {
      * @param loginUser ログインユーザー
      * @throws AppException ユーザーコードが存在しない場合にスローされます
      */
-    public void save(int code, String name, int repUserCode,User loginUser) throws AppException {
+    public void save(int code, String name, int repUserCode, User loginUser) throws AppException {
         User user = userDataAccess.findByCode(repUserCode);
-        Task task = new Task(code, name, repUserCode, loginUser);
-        Log log = new Log(task.getCode(), loginUser.getCode(), 0, LocalDate.now());
+        Task updateTask = new Task(code, name, 0, user);
+        Log log = new Log(code, loginUser.getCode(), 0, LocalDate.now());
 
         if (user == null) {
             throw new AppException ("存在するユーザーコードを入力してください");
         }
 
         // データに追加するメソッドを呼ぶ
-        taskDataAccess.save(task);
+        taskDataAccess.save(updateTask);
         // ログにデータを追加するメソッド
         logDataAccess.save(log);
         System.out.println(name + "の登録が完了しました。");
@@ -104,9 +104,26 @@ public class TaskLogic {
      * @throws AppException タスクコードが存在しない、またはステータスが前のステータスより1つ先でない場合にスローされます
      */
     public void changeStatus(int code, int status, User loginUser) throws AppException {
-        Task updateTask = new Task(code, null, status, loginUser);
+        Task task = taskDataAccess.findByCode(code);
+        // タスクコードが存在しない
+        if (task == null) {
+            throw new AppException ("存在するタスクコードを入力してください");
+        }
+
+        Task updateTask = new Task(code, task.getName(), status, loginUser);
+        Log log = new Log(code, loginUser.getCode(), status, LocalDate.now());
+        
+        // ステータスが合わない
+        if (status != task.getStatus() + 1) {
+            throw new AppException ("ステータスは、前のステータスより1つ先のもののみを選択してください");
+        }
+
         // csvを書き換えるメソッドを呼び出す
         taskDataAccess.update(updateTask);
+        // ログにデータを追加するメソッド
+        logDataAccess.save(log);
+        System.out.println("ステータスの変更が完了しました。");
+        System.out.println();
     }
 
     /**

@@ -217,18 +217,20 @@ public class TaskUI {
                 System.out.println("どのステータスに変更するか選択してください。");
                 System.out.println("1. 着手中, 2. 完了");
                 System.out.print("選択肢：");
-                String selectMenu = reader.readLine();
-                if (!isNumeric(selectMenu)) {
+                String updateStatus = reader.readLine();
+                if (!isNumeric(updateStatus)) {
                     System.out.println("コードは半角の数字で入力してください");
                     continue;
                 }
-                if (!(selectMenu == 1 || selectMenu == 2)){
+                if (!(Integer.parseInt(updateStatus) == 1 || Integer.parseInt(updateStatus) == 2)){
                     System.out.println("ステータスは1・2の中から選択してください");
                     continue;
                 }
                 System.out.println();
 
-                // 書き込むメソッドを呼ぶ
+                int code = Integer.parseInt(taskCode);
+                int status = Integer.parseInt(updateStatus);
+                taskLogic.changeStatus(code, status, loginUser);// 書き込むメソッドを呼ぶ
                 flg = false;
             } catch (IOException e) {
                 e.printStackTrace();

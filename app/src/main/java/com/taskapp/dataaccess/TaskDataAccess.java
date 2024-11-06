@@ -39,7 +39,7 @@ public class TaskDataAccess {
      * @return タスクのリスト
      */
     public List<Task> findAll() {
-        List<Task> tasks = new ArrayList<>();
+        List<Task> tasks = new ArrayList<Task>();
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             // ヘッダーを読み飛ばす
             reader.readLine();
@@ -68,8 +68,7 @@ public class TaskDataAccess {
      */
     public void save(Task task) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath, true))) {
-            // User user = task.getRepUser();
-            String line = task.getCode() + "," + task.getName() + "," + 0 + "," + task.getStatus();
+            String line = task.getCode() + "," + task.getName() + "," + 0 + "," + task.getRepUser().getCode();
             // データを1件追加
             writer.newLine();
             writer.write(line);
@@ -83,25 +82,50 @@ public class TaskDataAccess {
      * @param code 取得するタスクのコード
      * @return 取得したタスク
      */
-    // public Task findByCode(int code) {
-    //     try () {
+    public Task findByCode(int code) {
+        Task task = null;
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+            // ヘッダーを読み飛ばす
+            reader.readLine();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] list = line.split(",");
 
-    //     } catch (IOException e) {
-    //         e.printStackTrace();
-    //     }
-    //     return null;
-    // }
+                int userCode = Integer.parseInt(list[0]);
+                // codeが一致するか
+                if (code != userCode) continue;
+
+                // マッピング
+                String name = list[1];
+                int status = Integer.parseInt(list[2]);
+                User repUser = userDataAccess.findByCode(Integer.parseInt(list[3]));
+                task = new Task(userCode, name, status, repUser);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return task;
+    }
 
     /**
      * タスクデータを更新します。
      * @param updateTask 更新するタスク
      */
     public void update(Task updateTask) {
+        List<Task> tasks = findAll();
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
-            List<Task> tasks
+            String line;
             // ヘッダーを書き込む
             writer.write("Code,Name,Status,Rep_User_Code\n");
-
+            for (Task task : tasks) {
+                if (task.getCode() == updateTask.getCode()) {
+                    line = createLine(updateTask);
+                } else {
+                    line = createLine(task);
+                }
+                writer.write(line);
+                writer.newLine();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
